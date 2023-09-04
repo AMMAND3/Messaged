@@ -13,7 +13,7 @@ const getMesage = async (
                 seen: true,
             },
             orderBy: {
-                createdAt: 'desc'
+                createdAt: 'asc'
             }
         });
 
