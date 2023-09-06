@@ -1,79 +1,82 @@
-'use client';
+"use client";
 
-import axios from "axios";
-import { useEffect, useRef, useState } from "react";
-
-import { pusherClient } from "@/app/libs/pusher";
 import useConversation from "@/app/hooks/useConversation";
-import MessageBox from "./MessageBox";
+import { pusherClient } from "@/app/libs/pusher";
 import { FullMessageType } from "@/app/types";
+import axios from "axios";
 import { find } from "lodash";
+import { useEffect, useRef, useState } from "react";
+import MessageBox from "./MessageBox";
 
 interface BodyProps {
-  initialMessages: FullMessageType[];
+    initialMessages: FullMessageType[]
+    
 }
 
-const Body: React.FC<BodyProps> = ({ initialMessages = [] }) => {
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const [messages, setMessages] = useState(initialMessages);
-  
-  const { conversationId } = useConversation();
+const Body: React.FC<BodyProps> = ({ initialMessages }) => {
 
-  useEffect(() => {
-    axios.post(`/api/conversations/${conversationId}/seen`);
-  }, [conversationId]);
+    const [messages, setMessages] = useState(initialMessages);
+    const bottomnRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    pusherClient.subscribe(conversationId)
-    bottomRef?.current?.scrollIntoView();
+    const { conversationId } = useConversation();
 
-    const messageHandler = (message: FullMessageType) => {
-      axios.post(`/api/conversations/${conversationId}/seen`);
-
-      setMessages((current) => {
-        if (find(current, { id: message.id })) {
-          return current;
-        }
-
-        return [...current, message]
-      });
+    useEffect(() => {
+        axios.post(`/api/conversations/${conversationId}/seen`);
+      }, [conversationId]);  
       
-      bottomRef?.current?.scrollIntoView();
-    };
+    useEffect(() => {
+        pusherClient.subscribe(conversationId);
+        bottomnRef?.current?.scrollIntoView();
 
-    const updateMessageHandler = (newMessage: FullMessageType) => {
-      setMessages((current) => current.map((currentMessage) => {
-        if (currentMessage.id === newMessage.id) {
-          return newMessage;
+        const messageHandler = (message: FullMessageType) => {
+            axios.post(`/api/conversations/${conversationId}/seen`);
+            setMessages((current) => {
+
+                if (find(current, {id: message.id})){
+                    return current;
+                }
+
+                return [...current, message];
+            })
+
+            bottomnRef?.current?.scrollIntoView();
         }
-  
-        return currentMessage;
-      }))
-    };
-  
 
-    pusherClient.bind('messages:new', messageHandler)
-    pusherClient.bind('message:update', updateMessageHandler);
+        const updateMessageHandler = (newMessage: FullMessageType) => {
 
-    return () => {
-      pusherClient.unsubscribe(conversationId)
-      pusherClient.unbind('messages:new', messageHandler)
-      pusherClient.unbind('message:update', updateMessageHandler)
-    }
-  }, [conversationId]);
+            setMessages((current) => current.map((currentMessage) => {
+                if (currentMessage.id == newMessage.id) {
+                    return newMessage;
+                }
 
-  return ( 
-    <div className="flex-1 overflow-y-auto">
-      {messages.map((message, i) => (
-        <MessageBox 
-          isLast={i === messages.length - 1} 
-          key={message.id} 
-          data={message}
-        />
-      ))}
-      <div className="pt-24" ref={bottomRef} />
-    </div>
-  );
+                return currentMessage;
+            }));
+
+        };
+
+        pusherClient.bind('messages:new', messageHandler);
+
+        pusherClient.bind('message:update', updateMessageHandler)
+
+        return () => {
+            pusherClient.unsubscribe(conversationId);
+            pusherClient.unbind('messages:new', messageHandler);
+            pusherClient.bind('message:update', updateMessageHandler);
+        }
+      }, [conversationId])
+
+    return( 
+        <div className="flex-1 overflow-y-auto">
+            {messages.map((message, i) => (
+                <MessageBox
+                    isLast={i == messages.length - 1}
+                    key={message.id}
+                    data={message}
+                />
+            ))}
+            <div ref={bottomnRef} className="pt-24" />
+        </div>
+    );
 }
- 
+
 export default Body;

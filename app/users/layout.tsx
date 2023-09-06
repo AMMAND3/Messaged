@@ -10,7 +10,7 @@ export default async function UsersLayout({
 
     const users = await getUsers();
     return (
-        // @ts-expect-error
+        // @ts-ignore: Sever Component issue
         <Sidebar>
             <div className="h-full">
                 <UserList items={users} />
