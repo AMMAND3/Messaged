@@ -1,6 +1,7 @@
 "use client";
 
 import Avatar from "@/app/components/Avatar";
+import AvatarGroup from "@/app/components/AvatarGroup";
 import useOtherUser from "@/app/hooks/useOtherUser";
 import { Conversation, User } from "@prisma/client";
 import Link from "next/link";
@@ -41,7 +42,11 @@ const Header : React.FC<HeaderProps> = ({
                 <Link href="/conversations" className="lg:hidden block text-sky-500 hover:text-sky-600 transition cursor-pointer">
                     <HiChevronLeft size={32}/>
                 </Link>
-                <Avatar user={otherUser} />
+                {conversation.isGroup ? (
+                    <AvatarGroup users={conversation.user}/>
+                ) : (
+                    <Avatar user={otherUser} />
+                )}
                 <div className="flex flex-col">
                     <div>
                         {conversation.name || otherUser.name}
@@ -51,7 +56,7 @@ const Header : React.FC<HeaderProps> = ({
                     </div>
                 </div>
             </div>
-            <HiEllipsisHorizontal size={32} onClick={()=> {}} className="text-sky-500 cursor-pointer hover:text-sky-600 transition"/>
+            <HiEllipsisHorizontal size={32} onClick={()=> setDrawerOpen(true)} className="text-sky-500 cursor-pointer hover:text-sky-600 transition"/>
         </div>
     </>
     );
