@@ -107,6 +107,7 @@ export async function POST(
 
 
     } catch (error: any) {
+        console.error(error);
         return new NextResponse('Internal Error', {status: 500});
     }
 }
